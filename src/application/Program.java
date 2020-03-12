@@ -1,33 +1,46 @@
 package application;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.util.Scanner;
 
 import db.DB;
-import db.DbException;
+import entity.Department;
+import entity.Seller;
 
 public class Program {
 	public static void main(String args[]) {
-		Connection conn = DB.getConnection();
-		Statement statement = null;
-		ResultSet resultSet = null;
-		try {
-			statement = conn.createStatement();
-			resultSet = statement.executeQuery("Select * from department");
-			System.out.println("Has rows: " + resultSet.first());
-			resultSet.beforeFirst();
-			while (resultSet.next()) {
-				System.out.println(resultSet.getString("name"));
-			}
-		} catch (SQLException e) {
-			e.printStackTrace();
-			throw new DbException(e.getMessage());
-		} finally {
-			DB.closeStatement(statement);
-			DB.closeResultset(resultSet);
-			DB.closeConnection();			
+		Scanner scanner = new Scanner(System.in);
+		
+		Seller seller = new Seller();
+		
+		System.out.print("Name: ");
+		seller.setName(scanner.nextLine());
+		
+		System.out.print("Email: ");
+		seller.setEmail(scanner.nextLine());
+		
+		System.out.print("Base salary: ");
+		seller.setBaseSalary(scanner.nextDouble());
+		
+		scanner.nextLine();
+		
+		System.out.print("Birth date (dd/MM/yyyy): ");
+		seller.setBirthDate(scanner.nextLine());
+		
+		System.out.print("Department number: ");
+		seller.setDepartment(new Department(scanner.nextInt()));
+		
+		int returnId = seller.create();
+		
+		if (returnId != 0)
+			System.out.println("User created with id: " + returnId);
+		else
+			System.out.println("User not created");
+		
+		for(String name : Seller.list()) {
+			System.out.println(name);
 		}
+				
+		DB.closeConnection();
+		scanner.close();
 	}
 }
