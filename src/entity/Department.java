@@ -23,6 +23,11 @@ public class Department implements Serializable {
 		this.id = id;
 	}
 
+	public Department(int id, String name) {
+		this.id = id;
+		this.name = name;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;

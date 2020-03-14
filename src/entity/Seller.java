@@ -2,6 +2,7 @@ package entity;
 
 import java.io.Serializable;
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -19,12 +20,16 @@ public class Seller implements Serializable {
 	private int id;
 	private String name;
 	private String email;
-	private String birthDate;
+	private Date birthDate;
 	private Double baseSalary;
 	private Department department;
 	
 	public static final String TABLE = "seller";
 	private static SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+	
+	public void setId(int id) {
+		this.id = id;
+	}
 	
 	public int getId() {
 		return id;
@@ -50,8 +55,8 @@ public class Seller implements Serializable {
 		return dateFormat.format(birthDate);
 	}
 
-	public void setBirthDate(String birthDate) {
-		this.birthDate = birthDate;
+	public void setBirthDate(Date date) {
+		this.birthDate = date;
 	}
 
 	public Double getBaseSalary() {
@@ -113,7 +118,7 @@ public class Seller implements Serializable {
 			
 			preparedStatement.setString(1, this.name);
 			preparedStatement.setString(2, this.email);
-			preparedStatement.setDate(3, new java.sql.Date(dateFormat.parse(this.birthDate).getTime()));
+			preparedStatement.setDate(3, this.birthDate);
 			preparedStatement.setDouble(4, this.baseSalary);
 			preparedStatement.setInt(5, this.department.getId());
 			
@@ -129,8 +134,6 @@ public class Seller implements Serializable {
 			
 		} catch (SQLException e) {
 			throw new DbException(e.getMessage());
-		} catch (ParseException e) {
-			throw new RuntimeException("Error to convert date");
 		} finally {
 			DB.closeStatement(preparedStatement);
 		}
@@ -154,7 +157,7 @@ public class Seller implements Serializable {
 			
 			preparedStatement.setString(1, this.name);
 			preparedStatement.setString(2, this.email);
-			preparedStatement.setDate(3, new java.sql.Date(dateFormat.parse(this.birthDate).getTime()));
+			preparedStatement.setDate(3, this.birthDate);
 			preparedStatement.setDouble(4, this.baseSalary);
 			preparedStatement.setInt(5, this.department.getId());
 			preparedStatement.setInt(6, this.id);
@@ -162,8 +165,6 @@ public class Seller implements Serializable {
 			return preparedStatement.executeUpdate();
 		} catch (SQLException e) {
 			throw new DbException(e.getMessage());
-		} catch (ParseException e) {
-			throw new RuntimeException("Error to convert date");
 		} finally {
 			DB.closeStatement(preparedStatement);
 		}
