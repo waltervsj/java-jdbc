@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -16,7 +17,7 @@ import entity.Seller;
 import model.dao.SellerDao;
 
 public class SellerDaoJDBC implements SellerDao {
-
+	private static final String TABLE = "seller";
 	private Connection dbConnection;
 	private Map<Integer, Department> map = new HashMap<>();
 	
@@ -25,18 +26,77 @@ public class SellerDaoJDBC implements SellerDao {
 	}
 	
 	public void insert(Seller seller) {
-		// TODO Auto-generated method stub
-		
+		PreparedStatement preparedStatement = null;
+		try {
+			preparedStatement = dbConnection.prepareStatement(
+					"INSERT INTO " + TABLE
+					+ "(name, email, birthdate, basesalary, departmentid)"
+					+ "VALUES (?, ?, ?, ?, ?)"
+			, Statement.RETURN_GENERATED_KEYS);
+			
+			preparedStatement.setString(1, seller.getName());
+			preparedStatement.setString(2, seller.getEmail());
+			preparedStatement.setDate(3, seller.getBirthDate());
+			preparedStatement.setDouble(4, seller.getBaseSalary());
+			preparedStatement.setInt(5, seller.getDepartment().getId());
+			
+			if (preparedStatement.executeUpdate() > 0) {
+				ResultSet resultSet = preparedStatement.getGeneratedKeys();
+				while(resultSet.next()) {
+					seller.setId(resultSet.getInt(1));
+				}
+				DB.closeResultset(resultSet);
+			}
+			
+		} catch (SQLException e) {
+			throw new DbException(e.getMessage());
+		} finally {
+			DB.closeStatement(preparedStatement);
+		}
 	}
 
 	public void update(Seller seller) {
-		// TODO Auto-generated method stub
+		PreparedStatement preparedStatement = null;
 		
+		try {
+			String sqlCommand = 
+				"UPDATE " + TABLE + " SET"
+				+ " Name = ?"
+				+ ", Email = ?"
+				+ ", BirthDate = ?" 
+				+ ", BaseSalary = ?"
+				+ ", DepartmentId = ?"
+				+ " WHERE Id = ?";
+			
+			preparedStatement = dbConnection.prepareStatement(sqlCommand);
+			
+			preparedStatement.setString(1, seller.getName());
+			preparedStatement.setString(2, seller.getEmail());
+			preparedStatement.setDate(3, seller.getBirthDate());
+			preparedStatement.setDouble(4, seller.getBaseSalary());
+			preparedStatement.setInt(5, seller.getDepartment().getId());
+			preparedStatement.setInt(6, seller.getId());
+			
+			preparedStatement.executeUpdate();
+		} catch (SQLException e) {
+			throw new DbException(e.getMessage());
+		} finally {
+			DB.closeStatement(preparedStatement);
+		}
 	}
 
 	public void deleteById(Integer id) {
-		// TODO Auto-generated method stub
-		
+		PreparedStatement preparedStatement = null;	
+		try {
+			preparedStatement = dbConnection.prepareStatement("DELETE FROM " + TABLE + " WHERE Id = ?");
+			preparedStatement.setInt(1, id);
+			
+			preparedStatement.execute();
+		} catch (SQLException e) {
+			throw new DbException(e.getMessage());
+		} finally {
+			DB.closeStatement(preparedStatement);
+		}
 	}
 
 	public Seller findById(Integer id) {
@@ -45,7 +105,7 @@ public class SellerDaoJDBC implements SellerDao {
 		try {
 			statement = dbConnection.prepareStatement(
 					"SELECT s.*, d.Name as DepName "
-					+ "FROM seller s INNER JOIN department d "
+					+ "FROM " + TABLE + " s INNER JOIN department d "
 					+ "ON s.DepartmentId = d.Id "
 					+ "WHERE s.id = ?"
 			);
@@ -74,7 +134,7 @@ public class SellerDaoJDBC implements SellerDao {
 		try {
 			statement = dbConnection.prepareStatement(
 					"SELECT s.*, d.Name as DepName "
-					+ "FROM seller s "
+					+ "FROM " + TABLE + " s "
 					+ "INNER JOIN department d ON s.DepartmentId = d.Id "
 					+ "WHERE d.id = ? "
 					+ "ORDER BY s.name"
@@ -113,7 +173,7 @@ public class SellerDaoJDBC implements SellerDao {
 		try {
 			statement = dbConnection.prepareStatement(
 					"SELECT s.*, d.Name as DepName "
-					+ "FROM seller s "
+					+ "FROM " + TABLE + " s "
 					+ "INNER JOIN department d ON s.DepartmentId = d.Id "
 					+ "ORDER BY s.name"
 			);

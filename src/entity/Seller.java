@@ -1,18 +1,7 @@
 package entity;
 
 import java.io.Serializable;
-import java.sql.Connection;
 import java.sql.Date;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.List;
-
-import db.DB;
-import db.DbException;
 
 public class Seller implements Serializable {
 	private static final long serialVersionUID = 1L;
@@ -24,7 +13,6 @@ public class Seller implements Serializable {
 	private Department department;
 	
 	public static final String TABLE = "seller";
-	private static SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
 	
 	public void setId(int id) {
 		this.id = id;
@@ -50,8 +38,8 @@ public class Seller implements Serializable {
 		this.email = email;
 	}
 
-	public String getBirthDate() {
-		return dateFormat.format(birthDate);
+	public Date getBirthDate() {
+		return birthDate;
 	}
 
 	public void setBirthDate(Date date) {
@@ -105,109 +93,4 @@ public class Seller implements Serializable {
 				+ baseSalary + ", department=" + department + "]";
 	}
 
-	public int create() {
-		Connection dbConnection = DB.getConnection();
-		PreparedStatement preparedStatement = null;
-		try {
-			preparedStatement = dbConnection.prepareStatement(
-					"INSERT INTO " + TABLE
-					+ "(name, email, birthdate, basesalary, departmentid)"
-					+ "VALUES (?, ?, ?, ?, ?)"
-			, Statement.RETURN_GENERATED_KEYS);
-			
-			preparedStatement.setString(1, this.name);
-			preparedStatement.setString(2, this.email);
-			preparedStatement.setDate(3, this.birthDate);
-			preparedStatement.setDouble(4, this.baseSalary);
-			preparedStatement.setInt(5, this.department.getId());
-			
-			if (preparedStatement.executeUpdate() > 0) {
-				ResultSet resultSet = preparedStatement.getGeneratedKeys();
-				while(resultSet.next()) {
-					this.id = resultSet.getInt(1);
-				}
-				DB.closeResultset(resultSet);
-			}
-			
-			return this.id;
-			
-		} catch (SQLException e) {
-			throw new DbException(e.getMessage());
-		} finally {
-			DB.closeStatement(preparedStatement);
-		}
-	}
-	
-	public int update() {
-		Connection dbConnetion = DB.getConnection();
-		PreparedStatement preparedStatement = null;
-		
-		try {
-			String sqlCommand = 
-				"UPDATE " + TABLE + " SET"
-				+ " Name = ?"
-				+ ", Email = ?"
-				+ ", BirthDate = ?" 
-				+ ", BaseSalary = ?"
-				+ ", DepartmentId = ?"
-				+ " WHERE Id = ?";
-			
-			preparedStatement = dbConnetion.prepareStatement(sqlCommand);
-			
-			preparedStatement.setString(1, this.name);
-			preparedStatement.setString(2, this.email);
-			preparedStatement.setDate(3, this.birthDate);
-			preparedStatement.setDouble(4, this.baseSalary);
-			preparedStatement.setInt(5, this.department.getId());
-			preparedStatement.setInt(6, this.id);
-			
-			return preparedStatement.executeUpdate();
-		} catch (SQLException e) {
-			throw new DbException(e.getMessage());
-		} finally {
-			DB.closeStatement(preparedStatement);
-		}
-		
-	}
-	
-	public boolean delete() {
-		Connection dbConnetion = DB.getConnection();
-		PreparedStatement preparedStatement = null;
-		
-		try {
-		
-			preparedStatement = dbConnetion.prepareStatement("DELETE FROM " + TABLE + " WHERE Id = ?");
-
-			preparedStatement.setInt(1, this.id);
-			
-			return preparedStatement.execute();
-		} catch (SQLException e) {
-			throw new DbException(e.getMessage());
-		} finally {
-			DB.closeStatement(preparedStatement);
-		}
-	}
-	
-	public static List<String> list() {
-		Connection dbConnection = DB.getConnection();
-		List<String> sellers = new ArrayList<>();
-		Statement statement = null;
-		
-		try {
-			statement = dbConnection.createStatement();
-			ResultSet resultSet = statement.executeQuery("Select * from " + TABLE);
-			System.out.println("Has rows: " + resultSet.first());
-			resultSet.beforeFirst();
-			
-			while (resultSet.next()) {
-				sellers.add(resultSet.getString("name"));
-			}
-			
-			return sellers;
-		} catch (SQLException e) {
-			throw new DbException(e.getMessage());
-		} finally {
-			DB.closeStatement(statement);
-		}
-	}
 }
