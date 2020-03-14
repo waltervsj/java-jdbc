@@ -18,6 +18,7 @@ import model.dao.SellerDao;
 public class SellerDaoJDBC implements SellerDao {
 
 	private Connection dbConnection;
+	private Map<Integer, Department> map = new HashMap<>();
 	
 	public SellerDaoJDBC(Connection connection) {
 		this.dbConnection = connection;
@@ -81,23 +82,8 @@ public class SellerDaoJDBC implements SellerDao {
 			statement.setInt(1, department.getId());
 			
 			resultSet = statement.executeQuery();
-			
-			List<Seller> sellers = new ArrayList<Seller>();
-			
-			Map<Integer, Department> map = new HashMap<>();
-			
-			while (resultSet.next()) {
-				Department newDepartment = map.get(resultSet.getInt("DepartmentId"));
-				
-				if (newDepartment == null) {
-					newDepartment = instanciateDepartment(resultSet);
-					map.put(resultSet.getInt("DepartmentId"), newDepartment);
-				}
-				
-				sellers.add(instanciateSeller(resultSet, newDepartment));
-			}
-			
-			return sellers;
+		
+			return returnSellers(resultSet);
 		} catch (SQLException e) {
 			throw new DbException(e.getMessage());
 		} finally {
@@ -122,8 +108,43 @@ public class SellerDaoJDBC implements SellerDao {
 	}
 
 	public List<Seller> findAll() {
-		// TODO Auto-generated method stub
-		return null;
+		PreparedStatement statement = null;
+		ResultSet resultSet = null;
+		try {
+			statement = dbConnection.prepareStatement(
+					"SELECT s.*, d.Name as DepName "
+					+ "FROM seller s "
+					+ "INNER JOIN department d ON s.DepartmentId = d.Id "
+					+ "ORDER BY s.name"
+			);
+			
+			resultSet = statement.executeQuery();
+			
+			return returnSellers(resultSet);
+		} catch (SQLException e) {
+			throw new DbException(e.getMessage());
+		} finally {
+			DB.closeStatement(statement);
+			DB.closeResultset(resultSet);
+		}
+	}
+
+	private List<Seller> returnSellers(ResultSet resultSet) throws SQLException {
+		List<Seller> sellers = new ArrayList<Seller>();
+		while (resultSet.next()) {
+			Department newDepartment = returnOrCreateDepartment(resultSet);
+			sellers.add(instanciateSeller(resultSet, newDepartment));
+		}
+		return sellers;
+	}
+
+	private Department returnOrCreateDepartment(ResultSet resultSet) throws SQLException {
+		Department department = map.get(resultSet.getInt("DepartmentId"));
+		if (department == null) {
+			department = instanciateDepartment(resultSet);
+			map.put(resultSet.getInt("DepartmentId"), department);
+		}
+		return department;
 	}
 
 }
