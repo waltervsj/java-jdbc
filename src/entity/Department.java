@@ -11,6 +11,10 @@ public class Department implements Serializable {
 		return id;
 	}
 
+	public void setId(int id) {
+		this.id = id;
+	}
+	
 	public String getName() {
 		return name;
 	}
@@ -21,6 +25,10 @@ public class Department implements Serializable {
 
 	public Department(int id) {
 		this.id = id;
+	}
+
+	public Department(String name) {
+		this.name = name;
 	}
 
 	public Department(int id, String name) {
@@ -54,4 +62,6 @@ public class Department implements Serializable {
 	public String toString() {
 		return "Department [id=" + id + ", name=" + name + "]";
 	}
+
+
 }

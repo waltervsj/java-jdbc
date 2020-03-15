@@ -7,8 +7,8 @@ import entity.Seller;
 
 public interface SellerDao {
 	int insert(Seller seller);
-	void update(Seller seller);
-	void deleteById(Integer id);
+	int update(Seller seller);
+	int deleteById(Integer id);
 	Seller findById(Integer id);
 	List<Seller> findAll();
 	List<Seller> findByDepartment(Department department);

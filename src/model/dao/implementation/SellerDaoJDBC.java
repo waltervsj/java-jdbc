@@ -57,7 +57,7 @@ public class SellerDaoJDBC implements SellerDao {
 		}
 	}
 
-	public void update(Seller seller) {
+	public int update(Seller seller) {
 		PreparedStatement preparedStatement = null;
 		
 		try {
@@ -79,7 +79,7 @@ public class SellerDaoJDBC implements SellerDao {
 			preparedStatement.setInt(5, seller.getDepartment().getId());
 			preparedStatement.setInt(6, seller.getId());
 			
-			preparedStatement.executeUpdate();
+			return preparedStatement.executeUpdate();
 		} catch (SQLException e) {
 			throw new DbException(e.getMessage());
 		} finally {
@@ -87,13 +87,13 @@ public class SellerDaoJDBC implements SellerDao {
 		}
 	}
 
-	public void deleteById(Integer id) {
+	public int deleteById(Integer id) {
 		PreparedStatement preparedStatement = null;	
 		try {
 			preparedStatement = dbConnection.prepareStatement("DELETE FROM " + TABLE + " WHERE Id = ?");
 			preparedStatement.setInt(1, id);
 			
-			preparedStatement.execute();
+			return preparedStatement.executeUpdate();
 		} catch (SQLException e) {
 			throw new DbException(e.getMessage());
 		} finally {
