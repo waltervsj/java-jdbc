@@ -25,8 +25,9 @@ public class SellerDaoJDBC implements SellerDao {
 		this.dbConnection = connection;
 	}
 	
-	public void insert(Seller seller) {
+	public int insert(Seller seller) {
 		PreparedStatement preparedStatement = null;
+		ResultSet resultSet = null;
 		try {
 			preparedStatement = dbConnection.prepareStatement(
 					"INSERT INTO " + TABLE
@@ -36,22 +37,23 @@ public class SellerDaoJDBC implements SellerDao {
 			
 			preparedStatement.setString(1, seller.getName());
 			preparedStatement.setString(2, seller.getEmail());
-			preparedStatement.setDate(3, seller.getBirthDate());
+			preparedStatement.setDate(3, new java.sql.Date(seller.getBirthDate().getTime()));
 			preparedStatement.setDouble(4, seller.getBaseSalary());
 			preparedStatement.setInt(5, seller.getDepartment().getId());
 			
 			if (preparedStatement.executeUpdate() > 0) {
-				ResultSet resultSet = preparedStatement.getGeneratedKeys();
+				resultSet = preparedStatement.getGeneratedKeys();
 				while(resultSet.next()) {
 					seller.setId(resultSet.getInt(1));
 				}
-				DB.closeResultset(resultSet);
 			}
 			
+			return seller.getId();
 		} catch (SQLException e) {
 			throw new DbException(e.getMessage());
 		} finally {
 			DB.closeStatement(preparedStatement);
+			DB.closeResultset(resultSet);
 		}
 	}
 
@@ -72,7 +74,7 @@ public class SellerDaoJDBC implements SellerDao {
 			
 			preparedStatement.setString(1, seller.getName());
 			preparedStatement.setString(2, seller.getEmail());
-			preparedStatement.setDate(3, seller.getBirthDate());
+			preparedStatement.setDate(3, new java.sql.Date(seller.getBirthDate().getTime()));
 			preparedStatement.setDouble(4, seller.getBaseSalary());
 			preparedStatement.setInt(5, seller.getDepartment().getId());
 			preparedStatement.setInt(6, seller.getId());

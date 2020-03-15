@@ -6,7 +6,7 @@ import entity.Department;
 import entity.Seller;
 
 public interface SellerDao {
-	void insert(Seller seller);
+	int insert(Seller seller);
 	void update(Seller seller);
 	void deleteById(Integer id);
 	Seller findById(Integer id);
